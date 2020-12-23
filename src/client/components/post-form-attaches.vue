@@ -75,6 +75,23 @@ export default defineComponent({
 				this.$emit('changeSensitive', file, !file.isSensitive);
 			});
 		},
+		async comment(file) {
+			const { canceled, result } = await os.dialog({
+				title: this.$t('enterFileName'),
+				input: {
+					default: ''
+				},
+				allowEmpty: false
+			});
+			if (canceled) return;
+			os.api('drive/files/update', {
+				fileId: file.id,
+				comment: result
+			}).then(() => {
+				this.$emit('changeComment', file, result);
+				file.comment = result;
+			});
+		},
 		async rename(file) {
 			const { canceled, result } = await os.dialog({
 				title: this.$ts.enterFileName,
@@ -102,8 +119,12 @@ export default defineComponent({
 				text: file.isSensitive ? this.$ts.unmarkAsSensitive : this.$ts.markAsSensitive,
 				icon: file.isSensitive ? faEyeSlash : faEye,
 				action: () => { this.toggleSensitive(file) }
-			}, {
-				text: this.$ts.attachCancel,
+			},{
+				text: this.$ts('addComment'),
+				icon: faICursor,
+				action: () => { this.comment(file) }
+			},{
+				text: this.$ts('attachCancel'),
 				icon: faTimesCircle,
 				action: () => { this.detachMedia(file.id) }
 			}], ev.currentTarget || ev.target).then(() => this.menu = null);
