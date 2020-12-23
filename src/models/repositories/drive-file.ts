@@ -15,6 +15,13 @@ export type PackedDriveFile = SchemaType<typeof packedDriveFileSchema>;
 
 @EntityRepository(DriveFile)
 export class DriveFileRepository extends Repository<DriveFile> {
+	public validateComment(name: string): boolean {
+		return (
+			(name.trim().length > 0) &&
+			(name.length <= 512)
+		);
+	}
+
 	public validateFileName(name: string): boolean {
 		return (
 			(name.trim().length > 0) &&

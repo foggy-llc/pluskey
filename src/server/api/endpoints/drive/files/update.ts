@@ -18,6 +18,14 @@ export const meta = {
 	kind: 'write:drive',
 
 	params: {
+		comment: {
+			validator: $.optional.str.pipe(DriveFiles.validateComment),
+			default: undefined as any,
+			desc: {
+				'en-US': 'Description of or comment on the file.'
+			}
+		},
+
 		fileId: {
 			validator: $.type(ID),
 			desc: {
