@@ -15,7 +15,7 @@
 		:title="image.name"
 		@click.prevent="onClick"
 	>
-		<ImgWithBlurhash :hash="image.blurhash" :src="url" :alt="image.comment || image.name" :title="image.name" :cover="false"/>
+		<ImgWithBlurhash :hash="image.blurhash" :src="url" :alt="image.comment || image.name" :title="image.comment || image.name" :cover="false"/>
 		<div class="gif" v-if="image.type === 'image/gif'">GIF</div>
 	</a>
 </div>
