@@ -77,7 +77,7 @@ export default defineComponent({
 		},
 		async comment(file) {
 			const { canceled, result } = await os.dialog({
-				title: this.$t('enterFileName'),
+				title: this.$t('enterComment'),
 				input: {
 					default: ''
 				},
