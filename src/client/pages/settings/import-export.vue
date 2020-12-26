@@ -84,27 +84,12 @@ export default defineComponent({
 
 		async doImport(target, e) {
 			const file = await selectFile(e.currentTarget || e.target);
-
-			let api = null;
-
-			switch(this.exportTarget) {
-				case 'following':
-					api = 'i/import-following';
-					break;
-				case 'user-lists':
-					api = 'i/import-user-lists';
-					break;
-				case 'blocking';
-					api = 'i/import-blocking';
-					break;
-				default:
-					null;
-			}
-			
+				
 			os.api(
 				target == 'following' ? 'i/import-following' :
 				target == 'user-lists' ? 'i/import-user-lists' :
 				target == 'blocking' ? 'i/import-blocking' :
+				target == 'mute' ? 'i/import-mute' :							
 				null, {
 					fileId: file.id
 			}).then(() => {
