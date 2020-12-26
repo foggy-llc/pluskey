@@ -1,7 +1,7 @@
 import * as Bull from 'bull';
 
 import { queueLogger } from '../../logger';
-import mute from '../../../server/api/endpoints/mute/create';
+import mute from '../../../services/muting/create';
 import parseAcct from '../../../misc/acct/parse';
 import { resolveUser } from '../../../remote/resolve-user';
 import { downloadTextFile } from '../../../misc/download-text-file';
