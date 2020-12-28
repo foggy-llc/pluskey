@@ -120,11 +120,11 @@ export default defineComponent({
 				icon: file.isSensitive ? faEyeSlash : faEye,
 				action: () => { this.toggleSensitive(file) }
 			},{
-				text: this.$ts('addComment'),
+				text: this.$ts.addComment,
 				icon: faICursor,
 				action: () => { this.comment(file) }
 			},{
-				text: this.$ts('attachCancel'),
+				text: this.$ts.attachCancel,
 				icon: faTimesCircle,
 				action: () => { this.detachMedia(file.id) }
 			}], ev.currentTarget || ev.target).then(() => this.menu = null);

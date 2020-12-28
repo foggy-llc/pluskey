@@ -89,7 +89,7 @@ export default defineComponent({
 				target == 'following' ? 'i/import-following' :
 				target == 'user-lists' ? 'i/import-user-lists' :
 				target == 'blocking' ? 'i/import-blocking' :
-				target == 'mute' ? 'i/import-mute' :							
+				target == 'mute' ? 'i/import-muting' :							
 				null, {
 					fileId: file.id
 			}).then(() => {
