@@ -19,8 +19,7 @@ import { deliverToRelays } from '../relay';
 export async function addPinned(user: User, noteId: Note['id']) {
 	// Fetch pinee
 	const note = await Notes.findOne({
-		id: noteId,
-		userId: user.id
+		id: noteId
 	});
 
 	if (note == null) {
