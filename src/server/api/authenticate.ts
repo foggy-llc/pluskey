@@ -1,8 +1,12 @@
 import isNativeToken from './common/is-native-token';
 import { User } from '../../models/entities/user';
 import { Users, AccessTokens, Apps } from '../../models';
-import { ensure } from '../../prelude/ensure';
 import { AccessToken } from '../../models/entities/access-token';
+import { Cache } from '@/misc/cache';
+
+// TODO: TypeORMのカスタムキャッシュプロバイダを使っても良いかも
+// ref. https://github.com/typeorm/typeorm/blob/master/docs/caching.md
+const cache = new Cache<User>(1000 * 60 * 60);
 
 export default async (token: string): Promise<[User | null | undefined, AccessToken | null | undefined]> => {
 	if (token == null) {
@@ -10,6 +14,11 @@ export default async (token: string): Promise<[User | null | undefined, AccessTo
 	}
 
 	if (isNativeToken(token)) {
+		const cached = cache.get(token);
+		if (cached) {
+			return [cached, null];
+		}
+
 		// Fetch user
 		const user = await Users
 			.findOne({ token });
@@ -18,8 +27,11 @@ export default async (token: string): Promise<[User | null | undefined, AccessTo
 			throw new Error('user not found');
 		}
 
+		cache.set(token, user);
+
 		return [user, null];
 	} else {
+		// TODO: cache
 		const accessToken = await AccessTokens.findOne({
 			where: [{
 				hash: token.toLowerCase() // app
@@ -43,7 +55,7 @@ export default async (token: string): Promise<[User | null | undefined, AccessTo
 
 		if (accessToken.appId) {
 			const app = await Apps
-				.findOne(accessToken.appId).then(ensure);
+				.findOneOrFail(accessToken.appId);
 
 			return [user, {
 				id: accessToken.id,

@@ -3,6 +3,11 @@ import define from '../../define';
 import { sendEmail } from '../../../../services/send-email';
 
 export const meta = {
+	desc: {
+		'ja-JP': 'メールを送信します。',
+		'en-US': 'Send a mail.'
+	},
+
 	tags: ['admin'],
 
 	requireCredential: true as const,
@@ -22,5 +27,5 @@ export const meta = {
 };
 
 export default define(meta, async (ps) => {
-	await sendEmail(ps.to, ps.subject, ps.text);
+	await sendEmail(ps.to, ps.subject, ps.text, ps.text);
 });

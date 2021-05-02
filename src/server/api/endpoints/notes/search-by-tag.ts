@@ -1,12 +1,13 @@
 import $ from 'cafy';
-import { ID } from '../../../../misc/cafy-id';
+import { ID } from '@/misc/cafy-id';
 import define from '../../define';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 import { Notes } from '../../../../models';
 import { generateMutedUserQuery } from '../../common/generate-muted-user-query';
 import { generateVisibilityQuery } from '../../common/generate-visibility-query';
 import { Brackets } from 'typeorm';
-import { safeForSql } from '../../../../misc/safe-for-sql';
+import { safeForSql } from '@/misc/safe-for-sql';
+import { normalizeForSearch } from '@/misc/normalize-for-search';
 
 export const meta = {
 	desc: {
@@ -94,14 +95,18 @@ export const meta = {
 
 export default define(meta, async (ps, me) => {
 	const query = makePaginationQuery(Notes.createQueryBuilder('note'), ps.sinceId, ps.untilId)
-		.leftJoinAndSelect('note.user', 'user');
+		.innerJoinAndSelect('note.user', 'user')
+		.leftJoinAndSelect('note.reply', 'reply')
+		.leftJoinAndSelect('note.renote', 'renote')
+		.leftJoinAndSelect('reply.user', 'replyUser')
+		.leftJoinAndSelect('renote.user', 'renoteUser');
 
 	generateVisibilityQuery(query, me);
 	if (me) generateMutedUserQuery(query, me);
 
 	if (ps.tag) {
 		if (!safeForSql(ps.tag)) return;
-		query.andWhere(`'{"${ps.tag.toLowerCase()}"}' <@ note.tags`);
+		query.andWhere(`'{"${normalizeForSearch(ps.tag)}"}' <@ note.tags`);
 	} else {
 		let i = 0;
 		query.andWhere(new Brackets(qb => {
@@ -109,7 +114,7 @@ export default define(meta, async (ps, me) => {
 				qb.orWhere(new Brackets(qb => {
 					for (const tag of tags) {
 						if (!safeForSql(tag)) return;
-						qb.andWhere(`'{"${tag.toLowerCase()}"}' <@ note.tags`);
+						qb.andWhere(`'{"${normalizeForSearch(ps.tag)}"}' <@ note.tags`);
 						i++;
 					}
 				}));

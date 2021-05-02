@@ -1,20 +1,20 @@
 import $ from 'cafy';
-import { ID } from '../../../../misc/cafy-id';
-import { publishMainStream } from '../../../../services/stream';
+import * as mfm from 'mfm-js';
+import { ID } from '@/misc/cafy-id';
+import { publishMainStream, publishUserEvent } from '../../../../services/stream';
 import acceptAllFollowRequests from '../../../../services/following/requests/accept-all';
 import { publishToFollowers } from '../../../../services/i/update';
 import define from '../../define';
-import { parse, parsePlain } from '../../../../mfm/parse';
-import extractEmojis from '../../../../misc/extract-emojis';
-import extractHashtags from '../../../../misc/extract-hashtags';
+import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mfm';
+import { extractHashtags } from '@/misc/extract-hashtags';
 import * as langmap from 'langmap';
 import { updateUsertags } from '../../../../services/update-hashtag';
 import { ApiError } from '../../error';
 import { Users, DriveFiles, UserProfiles, Pages } from '../../../../models';
 import { User } from '../../../../models/entities/user';
 import { UserProfile } from '../../../../models/entities/user-profile';
-import { ensure } from '../../../../prelude/ensure';
 import { notificationTypes } from '../../../../types';
+import { normalizeForSearch } from '@/misc/normalize-for-search';
 
 export const meta = {
 	desc: {
@@ -96,6 +96,10 @@ export const meta = {
 			validator: $.optional.bool,
 		},
 
+		hideOnlineStatus: {
+			validator: $.optional.bool,
+		},
+
 		carefulBot: {
 			validator: $.optional.bool,
 			desc: {
@@ -135,6 +139,10 @@ export const meta = {
 			validator: $.optional.bool,
 		},
 
+		receiveAnnouncementEmail: {
+			validator: $.optional.bool,
+		},
+
 		alwaysMarkNsfw: {
 			validator: $.optional.bool,
 			desc: {
@@ -155,6 +163,10 @@ export const meta = {
 
 		mutingNotificationTypes: {
 			validator: $.optional.arr($.str.or(notificationTypes as unknown as string[]))
+		},
+
+		emailNotificationTypes: {
+			validator: $.optional.arr($.str)
 		},
 	},
 
@@ -188,20 +200,27 @@ export const meta = {
 			code: 'NO_SUCH_PAGE',
 			id: '8e01b590-7eb9-431b-a239-860e086c408e'
 		},
+	},
+
+	res: {
+		type: 'object' as const,
+		optional: false as const, nullable: false as const,
+		ref: 'User'
 	}
 };
 
-export default define(meta, async (ps, user, token) => {
+export default define(meta, async (ps, _user, token) => {
+	const user = await Users.findOneOrFail(_user.id);
 	const isSecure = token == null;
 
 	const updates = {} as Partial<User>;
 	const profileUpdates = {} as Partial<UserProfile>;
 
-	const profile = await UserProfiles.findOne(user.id).then(ensure);
+	const profile = await UserProfiles.findOneOrFail(user.id);
 
 	if (ps.name !== undefined) updates.name = ps.name;
 	if (ps.description !== undefined) profileUpdates.description = ps.description;
-	//if (ps.lang !== undefined) updates.lang = ps.lang;
+	if (ps.lang !== undefined) profileUpdates.lang = ps.lang;
 	if (ps.location !== undefined) profileUpdates.location = ps.location;
 	if (ps.birthday !== undefined) profileUpdates.birthday = ps.birthday;
 	if (ps.avatarId !== undefined) updates.avatarId = ps.avatarId;
@@ -213,13 +232,16 @@ export default define(meta, async (ps, user, token) => {
 	if (ps.mutingNotificationTypes !== undefined) profileUpdates.mutingNotificationTypes = ps.mutingNotificationTypes as typeof notificationTypes[number][];
 	if (typeof ps.isLocked === 'boolean') updates.isLocked = ps.isLocked;
 	if (typeof ps.isExplorable === 'boolean') updates.isExplorable = ps.isExplorable;
+	if (typeof ps.hideOnlineStatus === 'boolean') updates.hideOnlineStatus = ps.hideOnlineStatus;
 	if (typeof ps.isBot === 'boolean') updates.isBot = ps.isBot;
 	if (typeof ps.carefulBot === 'boolean') profileUpdates.carefulBot = ps.carefulBot;
 	if (typeof ps.autoAcceptFollowed === 'boolean') profileUpdates.autoAcceptFollowed = ps.autoAcceptFollowed;
 	if (typeof ps.noCrawle === 'boolean') profileUpdates.noCrawle = ps.noCrawle;
 	if (typeof ps.isCat === 'boolean') updates.isCat = ps.isCat;
 	if (typeof ps.injectFeaturedNote === 'boolean') profileUpdates.injectFeaturedNote = ps.injectFeaturedNote;
+	if (typeof ps.receiveAnnouncementEmail === 'boolean') profileUpdates.receiveAnnouncementEmail = ps.receiveAnnouncementEmail;
 	if (typeof ps.alwaysMarkNsfw === 'boolean') profileUpdates.alwaysMarkNsfw = ps.alwaysMarkNsfw;
+	if (ps.emailNotificationTypes !== undefined) profileUpdates.emailNotificationTypes = ps.emailNotificationTypes;
 
 	if (ps.avatarId) {
 		const avatar = await DriveFiles.findOne(ps.avatarId);
@@ -274,14 +296,14 @@ export default define(meta, async (ps, user, token) => {
 	const newDescription = profileUpdates.description === undefined ? profile.description : profileUpdates.description;
 
 	if (newName != null) {
-		const tokens = parsePlain(newName);
-		emojis = emojis.concat(extractEmojis(tokens!));
+		const tokens = mfm.parsePlain(newName);
+		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
 	}
 
 	if (newDescription != null) {
-		const tokens = parse(newDescription);
-		emojis = emojis.concat(extractEmojis(tokens!));
-		tags = extractHashtags(tokens!).map(tag => tag.toLowerCase()).splice(0, 32);
+		const tokens = mfm.parse(newDescription);
+		emojis = emojis.concat(extractCustomEmojisFromMfm(tokens!));
+		tags = extractHashtags(tokens!).map(tag => normalizeForSearch(tag)).splice(0, 32);
 	}
 
 	updates.emojis = emojis;
@@ -301,6 +323,7 @@ export default define(meta, async (ps, user, token) => {
 
 	// Publish meUpdated event
 	publishMainStream(user.id, 'meUpdated', iObj);
+	publishUserEvent(user.id, 'updateUserProfile', await UserProfiles.findOne(user.id));
 
 	// 鍵垢を解除したとき、溜まっていたフォローリクエストがあるならすべて承認
 	if (user.isLocked && ps.isLocked === false) {

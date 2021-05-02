@@ -4,14 +4,14 @@
 		<div class="path" @contextmenu.prevent.stop="() => {}">
 			<XNavFolder :class="{ current: folder == null }"/>
 			<template v-for="f in hierarchyFolders">
-				<span class="separator"><Fa :icon="faAngleRight"/></span>
+				<span class="separator"><i class="fas fa-angle-right"></i></span>
 				<XNavFolder :folder="f"/>
 			</template>
-			<span class="separator" v-if="folder != null"><Fa :icon="faAngleRight"/></span>
+			<span class="separator" v-if="folder != null"><i class="fas fa-angle-right"></i></span>
 			<span class="folder current" v-if="folder != null">{{ folder.name }}</span>
 		</div>
 	</nav>
-	<div class="main _section" :class="{ uploading: uploadings.length > 0, fetching }"
+	<div class="main" :class="{ uploading: uploadings.length > 0, fetching }"
 		ref="main"
 		@dragover.prevent.stop="onDragover"
 		@dragenter="onDragenter"
@@ -21,13 +21,13 @@
 	>
 		<div class="contents" ref="contents">
 			<div class="folders" ref="foldersContainer" v-show="folders.length > 0">
-				<XFolder v-for="f in folders" :key="f.id" class="folder" :folder="f" :select-mode="select === 'folder'" :is-selected="selectedFolders.some(x => x.id === f.id)" @chosen="chooseFolder"/>
+				<XFolder v-for="(f, i) in folders" :key="f.id" class="folder" :folder="f" :select-mode="select === 'folder'" :is-selected="selectedFolders.some(x => x.id === f.id)" @chosen="chooseFolder" v-anim="i"/>
 				<!-- SEE: https://stackoverflow.com/questions/18744164/flex-box-align-last-row-to-grid -->
 				<div class="padding" v-for="(n, i) in 16" :key="i"></div>
 				<MkButton ref="moreFolders" v-if="moreFolders">{{ $ts.loadMore }}</MkButton>
 			</div>
 			<div class="files" ref="filesContainer" v-show="files.length > 0">
-				<XFile v-for="file in files" :key="file.id" class="file" :file="file" :select-mode="select === 'file'" :is-selected="selectedFiles.some(x => x.id === file.id)" @chosen="chooseFile"/>
+				<XFile v-for="(file, i) in files" :key="file.id" class="file" :file="file" :select-mode="select === 'file'" :is-selected="selectedFiles.some(x => x.id === file.id)" @chosen="chooseFile" v-anim="i"/>
 				<!-- SEE: https://stackoverflow.com/questions/18744164/flex-box-align-last-row-to-grid -->
 				<div class="padding" v-for="(n, i) in 16" :key="i"></div>
 				<MkButton ref="loadMoreFiles" @click="fetchMoreFiles" v-show="moreFiles">{{ $ts.loadMore }}</MkButton>
@@ -47,13 +47,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faAngleRight, faFolderPlus, faICursor, faLink, faUpload } from '@fortawesome/free-solid-svg-icons';
 import XNavFolder from './drive.nav-folder.vue';
 import XFolder from './drive.folder.vue';
 import XFile from './drive.file.vue';
 import MkButton from './ui/button.vue';
-import * as os from '@/os';
-import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import * as os from '@client/os';
 
 export default defineComponent({
 	components: {
@@ -125,7 +123,6 @@ export default defineComponent({
 			),
 			moreFilesElement: null as Element,
 
-			faAngleRight
 		};
 	},
 
@@ -606,26 +603,26 @@ export default defineComponent({
 				type: 'label'
 			}, {
 				text: this.$ts.upload,
-				icon: faUpload,
+				icon: 'fas fa-upload',
 				action: () => { this.selectLocalFile(); }
 			}, {
 				text: this.$ts.fromUrl,
-				icon: faLink,
+				icon: 'fas fa-link',
 				action: () => { this.urlUpload(); }
 			}, null, {
 				text: this.folder ? this.folder.name : this.$ts.drive,
 				type: 'label'
 			}, this.folder ? {
 				text: this.$ts.renameFolder,
-				icon: faICursor,
+				icon: 'fas fa-i-cursor',
 				action: () => { this.renameFolder(this.folder); }
 			} : undefined, this.folder ? {
 				text: this.$ts.deleteFolder,
-				icon: faTrashAlt,
+				icon: 'fas fa-trash-alt',
 				action: () => { this.deleteFolder(this.folder); }
 			} : undefined, {
 				text: this.$ts.createFolder,
-				icon: faFolderPlus,
+				icon: 'fas fa-folder-plus',
 				action: () => { this.createFolder(); }
 			}];
 		},
@@ -693,7 +690,7 @@ export default defineComponent({
 					opacity: 0.5;
 					cursor: default;
 
-					> [data-icon] {
+					> i {
 						margin: 0;
 					}
 				}
@@ -704,6 +701,7 @@ export default defineComponent({
 	> .main {
 		flex: 1;
 		overflow: auto;
+		padding: var(--margin);
 
 		&, * {
 			user-select: none;
@@ -735,7 +733,7 @@ export default defineComponent({
 				> .folder,
 				> .file {
 					flex-grow: 1;
-					width: 144px;
+					width: 128px;
 					margin: 4px;
 					box-sizing: border-box;
 				}
@@ -743,7 +741,7 @@ export default defineComponent({
 				> .padding {
 					flex-grow: 1;
 					pointer-events: none;
-					width: 144px + 8px;
+					width: 128px + 8px;
 				}
 			}
 

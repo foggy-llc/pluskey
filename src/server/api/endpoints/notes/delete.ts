@@ -1,12 +1,11 @@
 import $ from 'cafy';
-import { ID } from '../../../../misc/cafy-id';
+import { ID } from '@/misc/cafy-id';
 import deleteNote from '../../../../services/note/delete';
 import define from '../../define';
 import * as ms from 'ms';
 import { getNote } from '../../common/getters';
 import { ApiError } from '../../error';
 import { Users } from '../../../../models';
-import { ensure } from '../../../../prelude/ensure';
 
 export const meta = {
 	desc: {
@@ -62,5 +61,5 @@ export default define(meta, async (ps, user) => {
 	}
 
 	// この操作を行うのが投稿者とは限らない(例えばモデレーター)ため
-	await deleteNote(await Users.findOne(note.userId).then(ensure), note);
+	await deleteNote(await Users.findOneOrFail(note.userId), note);
 });

@@ -1,7 +1,5 @@
 import define from '../define';
-import { RegistryItems, UserProfiles, Users } from '../../../models';
-import { ensure } from '../../../prelude/ensure';
-import { genId } from '../../../misc/gen-id';
+import { Users } from '../../../models';
 
 export const meta = {
 	desc: {
@@ -24,28 +22,8 @@ export const meta = {
 export default define(meta, async (ps, user, token) => {
 	const isSecure = token == null;
 
-	// TODO: そのうち消す
-	const profile = await UserProfiles.findOne(user.id).then(ensure);
-	for (const [k, v] of Object.entries(profile.clientData)) {
-		await RegistryItems.insert({
-			id: genId(),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			userId: user.id,
-			domain: null,
-			scope: ['client', 'base'],
-			key: k,
-			value: v
-		});
-	}
-	await UserProfiles.createQueryBuilder().update()
-		.set({
-			clientData: {},
-		})
-		.where('userId = :id', { id: user.id })
-		.execute();
-
-	return await Users.pack(user, user, {
+	// ここで渡ってきている user はキャッシュされていて古い可能性もあるので id だけ渡す
+	return await Users.pack(user.id, user, {
 		detail: true,
 		includeSecrets: isSecure
 	});
