@@ -17,12 +17,12 @@
 	<FormGroup>
 		<template #label>{{ $ts._exportOrImport.muteList }}</template>
 		<FormButton @click="doExport('mute')"><i class="fas fa-download"></i> {{ $ts.export }}</FormButton>
-		<FormButton @click="doImport('mute', $event)"><Fa :icon="fas fa-upload"/> {{ $ts.import }}</FormButton>				
+		<FormButton @click="doImport('mute', $event)"><i class="fas fa-upload"></i> {{ $ts.import }}</FormButton>
 	</FormGroup>
 	<FormGroup>
 		<template #label>{{ $ts._exportOrImport.blockingList }}</template>
 		<FormButton @click="doExport('blocking')"><i class="fas fa-download"></i> {{ $ts.export }}</FormButton>
-		<FormButton @click="doImport('blocking', $event)"><Fa :icon="fas fa-upload"/> {{ $ts.import }}</FormButton>				
+		<FormButton @click="doImport('blocking', $event)"><i class="fas fa-upload"></i> {{ $ts.import }}</FormButton>
 	</FormGroup>
 </FormBase>
 </template>
