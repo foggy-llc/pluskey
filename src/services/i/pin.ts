@@ -58,7 +58,6 @@ export async function removePinned(user: { id: User['id']; host: User['host']; }
 	// Fetch unpinee
 	const note = await Notes.findOne({
 		id: noteId,
-		userId: user.id
 	});
 
 	if (note == null) {
