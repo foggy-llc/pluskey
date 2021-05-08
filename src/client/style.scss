@@ -11,12 +11,14 @@
 	@media (max-width: 500px) {
 		--margin: var(--marginHalf);
 	}
+
+	//--ad: rgb(255 169 0 / 10%);
 }
 
 ::selection {
 	color: #fff;
 	background-color: var(--accent);
-} 
+}
 
 html {
 	touch-action: manipulation;
@@ -32,7 +34,8 @@ html {
 	text-size-adjust: 100%;
 	tab-size: 2;
 
-	&, * {
+	&,
+	* {
 		scrollbar-color: var(--scrollbarHandle) inherit;
 		scrollbar-width: thin;
 
@@ -84,12 +87,14 @@ html {
 }
 
 html._themeChanging_ {
-	&, * {
+	&,
+	* {
 		transition: background 1s ease, border 1s ease !important;
 	}
 }
 
-html, body {
+html,
+body {
 	margin: 0;
 	padding: 0;
 	scroll-behavior: smooth;
@@ -107,12 +112,14 @@ a {
 	}
 }
 
-textarea, input {
+textarea,
+input {
 	tap-highlight-color: transparent;
 	-webkit-tap-highlight-color: transparent;
 }
 
-optgroup, option {
+optgroup,
+option {
 	background: var(--panel);
 	color: var(--fg);
 }
@@ -131,7 +138,8 @@ hr {
 }
 
 ._ghost {
-	&, * {
+	&,
+	* {
 		@extend ._noSelect;
 		pointer-events: none;
 	}
@@ -166,7 +174,8 @@ hr {
 	font-family: inherit;
 	line-height: inherit;
 
-	&, * {
+	&,
+	* {
 		@extend ._noSelect;
 	}
 
@@ -324,7 +333,10 @@ hr {
 ._root {
 	box-sizing: border-box;
 	margin: var(--root-margin, 32px) auto;
-	max-width: min(var(--baseContentWidth), calc(100% - (var(--root-margin, 32px) * 2)));
+	max-width: min(
+		var(--baseContentWidth),
+		calc(100% - (var(--root-margin, 32px) * 2))
+	);
 
 	// 子marginが突き抜けるのを防ぐため
 	// https://stackoverflow.com/questions/1762539/margin-on-child-element-moves-parent-element
@@ -337,14 +349,14 @@ hr {
 }
 
 ._monolithic_ {
-	._section {
+	._section:not(:empty) {
 		box-sizing: border-box;
 		padding: var(--root-margin, 32px);
-	
+
 		@media (max-width: 500px) {
 			--root-margin: 10px;
 		}
-	
+
 		& + ._section:not(:empty) {
 			border-top: solid 0.5px var(--divider);
 		}
@@ -476,21 +488,32 @@ hr {
 ._zoom {
 	transition-duration: 0.5s, 0.5s;
 	transition-property: opacity, transform;
-	transition-timing-function: cubic-bezier(0,.5,.5,1);
+	transition-timing-function: cubic-bezier(0, 0.5, 0.5, 1);
 }
 
-.zoom-enter-active, .zoom-leave-active {
+.zoom-enter-active,
+.zoom-leave-active {
 	transition: opacity 0.5s, transform 0.5s !important;
 }
-.zoom-enter-from, .zoom-leave-to {
+.zoom-enter-from,
+.zoom-leave-to {
 	opacity: 0;
 	transform: scale(0.9);
 }
 
 @keyframes blink {
-	0% { opacity: 1; transform: scale(1); }
-	30% { opacity: 1; transform: scale(1); }
-	90% { opacity: 0; transform: scale(0.5); }
+	0% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	30% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	90% {
+		opacity: 0;
+		transform: scale(0.5);
+	}
 }
 
 @keyframes tada {
@@ -523,29 +546,29 @@ hr {
 
 ._anime_bounce {
 	will-change: transform;
-  animation: bounce ease 0.7s;
-  animation-iteration-count: 1;
-  transform-origin: 50% 50%;
+	animation: bounce ease 0.7s;
+	animation-iteration-count: 1;
+	transform-origin: 50% 50%;
 }
 ._anime_bounce_ready {
 	will-change: transform;
-	transform:  scaleX(0.90) scaleY(0.90) ;
+	transform: scaleX(0.9) scaleY(0.9);
 }
 ._anime_bounce_standBy {
 	transition: transform 0.1s ease;
 }
 
-@keyframes bounce{
-  0% {
-    transform:  scaleX(0.90) scaleY(0.90) ;
-  }
-  19% {
-    transform:  scaleX(1.10) scaleY(1.10) ;
-  }
-  48% {
-    transform:  scaleX(0.95) scaleY(0.95) ;
-  }
-  100% {
-    transform:  scaleX(1.00) scaleY(1.00) ;
-  }
+@keyframes bounce {
+	0% {
+		transform: scaleX(0.9) scaleY(0.9);
+	}
+	19% {
+		transform: scaleX(1.1) scaleY(1.1);
+	}
+	48% {
+		transform: scaleX(0.95) scaleY(0.95);
+	}
+	100% {
+		transform: scaleX(1) scaleY(1);
+	}
 }

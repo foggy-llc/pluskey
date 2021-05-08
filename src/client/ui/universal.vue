@@ -1,68 +1,101 @@
 <template>
-<div class="mk-app" :class="{ wallpaper }">
-	<XSidebar ref="nav" class="sidebar"/>
+	<div class="mk-app" :class="{ wallpaper }">
+		<XSidebar ref="nav" class="sidebar" />
 
-	<div class="contents" ref="contents" @contextmenu.stop="onContextmenu">
-		<header class="header" ref="header" @click="onHeaderClick">
-			<XHeader :info="pageInfo"/>
-		</header>
-		<main ref="main">
-			<div class="content">
-				<router-view v-slot="{ Component }">
-					<transition :name="$store.state.animation ? 'page' : ''" mode="out-in" @enter="onTransition">
-						<keep-alive :include="['timeline']">
-							<component :is="Component" :ref="changePage"/>
-						</keep-alive>
-					</transition>
-				</router-view>
-			</div>
-			<div class="spacer"></div>
-		</main>
+		<div class="contents" ref="contents" @contextmenu.stop="onContextmenu">
+			<header class="header" ref="header" @click="onHeaderClick">
+				<XHeader :info="pageInfo" />
+			</header>
+			<main ref="main">
+				<div class="content">
+					<router-view v-slot="{ Component }">
+						<transition
+							:name="$store.state.animation ? 'page' : ''"
+							mode="out-in"
+							@enter="onTransition"
+						>
+							<keep-alive :include="['timeline']">
+								<component :is="Component" :ref="changePage" />
+							</keep-alive>
+						</transition>
+					</router-view>
+				</div>
+				<div class="spacer"></div>
+			</main>
+		</div>
+
+		<XSide v-if="isDesktop" class="side" ref="side" />
+
+		<div v-if="isDesktop" class="widgets" ref="widgets">
+			<XWidgets @mounted="attachSticky" />
+		</div>
+
+		<div class="buttons" :class="{ navHidden }">
+			<button class="button nav _button" @click="showNav" ref="navButton">
+				<i class="fas fa-bars"></i
+				><span v-if="navIndicated" class="indicator"
+					><i class="fas fa-circle"></i
+				></span>
+			</button>
+			<button
+				class="button home _button"
+				@click="$route.name === 'index' ? top() : $router.push('/')"
+			>
+				<i class="fas fa-home"></i>
+			</button>
+			<button
+				class="button notifications _button"
+				@click="$router.push('/my/notifications')"
+			>
+				<i class="fas fa-bell"></i
+				><span v-if="$i.hasUnreadNotification" class="indicator"
+					><i class="fas fa-circle"></i
+				></span>
+			</button>
+			<button class="button widget _button" @click="widgetsShowing = true">
+				<i class="fas fa-layer-group"></i>
+			</button>
+			<button class="button post _button" @click="post">
+				<i class="fas fa-pencil-alt"></i>
+			</button>
+		</div>
+
+		<button
+			class="widgetButton _button"
+			:class="{ navHidden }"
+			@click="widgetsShowing = true"
+		>
+			<i class="fas fa-layer-group"></i>
+		</button>
+
+		<transition name="tray-back">
+			<div
+				class="tray-back _modalBg"
+				v-if="widgetsShowing"
+				@click="widgetsShowing = false"
+				@touchstart.passive="widgetsShowing = false"
+			></div>
+		</transition>
+
+		<transition name="tray">
+			<XWidgets v-if="widgetsShowing" class="tray" />
+		</transition>
+
+		<XCommon />
 	</div>
-
-	<XSide v-if="isDesktop" class="side" ref="side"/>
-
-	<div v-if="isDesktop" class="widgets" ref="widgets">
-		<XWidgets @mounted="attachSticky"/>
-	</div>
-
-	<div class="buttons" :class="{ navHidden }">
-		<button class="button nav _button" @click="showNav" ref="navButton"><i class="fas fa-bars"></i><span v-if="navIndicated" class="indicator"><i class="fas fa-circle"></i></span></button>
-		<button class="button home _button" @click="$route.name === 'index' ? top() : $router.push('/')"><i class="fas fa-home"></i></button>
-		<button class="button notifications _button" @click="$router.push('/my/notifications')"><i class="fas fa-bell"></i><span v-if="$i.hasUnreadNotification" class="indicator"><i class="fas fa-circle"></i></span></button>
-		<button class="button widget _button" @click="widgetsShowing = true"><i class="fas fa-layer-group"></i></button>
-		<button class="button post _button" @click="post"><i class="fas fa-pencil-alt"></i></button>
-	</div>
-
-	<button class="widgetButton _button" :class="{ navHidden }" @click="widgetsShowing = true"><i class="fas fa-layer-group"></i></button>
-
-	<transition name="tray-back">
-		<div class="tray-back _modalBg"
-			v-if="widgetsShowing"
-			@click="widgetsShowing = false"
-			@touchstart.passive="widgetsShowing = false"
-		></div>
-	</transition>
-
-	<transition name="tray">
-		<XWidgets v-if="widgetsShowing" class="tray"/>
-	</transition>
-
-	<XCommon/>
-</div>
 </template>
 
 <script lang="ts">
-import { defineComponent, defineAsyncComponent } from 'vue';
-import { instanceName } from '@client/config';
-import { StickySidebar } from '@client/scripts/sticky-sidebar';
-import XSidebar from '@client/ui/_common_/sidebar.vue';
-import XCommon from './_common_/common.vue';
-import XHeader from './_common_/header.vue';
-import XSide from './default.side.vue';
-import * as os from '@client/os';
-import { sidebarDef } from '@client/sidebar';
-import * as symbols from '@client/symbols';
+import { defineComponent, defineAsyncComponent } from "vue";
+import { instanceName } from "@client/config";
+import { StickySidebar } from "@client/scripts/sticky-sidebar";
+import XSidebar from "@client/ui/_common_/sidebar.vue";
+import XCommon from "./_common_/common.vue";
+import XHeader from "./_common_/header.vue";
+import XSide from "./default.side.vue";
+import * as os from "@client/os";
+import { sidebarDef } from "@client/sidebar";
+import * as symbols from "@client/symbols";
 
 const DESKTOP_THRESHOLD = 1100;
 
@@ -71,15 +104,17 @@ export default defineComponent({
 		XCommon,
 		XSidebar,
 		XHeader,
-		XWidgets: defineAsyncComponent(() => import('./universal.widgets.vue')),
+		XWidgets: defineAsyncComponent(() => import("./universal.widgets.vue")),
 		XSide, // NOTE: dynamic importするとAsyncComponentWrapperが間に入るせいでref取得できなくて面倒になる
 	},
 
 	provide() {
 		return {
-			sideViewHook: this.isDesktop ? (url) => {
-				this.$refs.side.navigate(url);
-			} : null
+			sideViewHook: this.isDesktop
+				? (url) => {
+						this.$refs.side.navigate(url);
+				  }
+				: null,
 		};
 	},
 
@@ -90,34 +125,44 @@ export default defineComponent({
 			menuDef: sidebarDef,
 			navHidden: false,
 			widgetsShowing: false,
-			wallpaper: localStorage.getItem('wallpaper') != null,
+			wallpaper: localStorage.getItem("wallpaper") != null,
 		};
 	},
 
 	computed: {
 		navIndicated(): boolean {
 			for (const def in this.menuDef) {
-				if (def === 'notifications') continue; // 通知は下にボタンとして表示されてるから
+				if (def === "notifications") continue; // 通知は下にボタンとして表示されてるから
 				if (this.menuDef[def].indicated) return true;
 			}
 			return false;
-		}
+		},
 	},
 
 	created() {
-		document.documentElement.style.overflowY = 'scroll';
+		document.documentElement.style.overflowY = "scroll";
 
 		if (this.$store.state.widgets.length === 0) {
-			this.$store.set('widgets', [{
-				name: 'calendar',
-				id: 'a', place: 'right', data: {}
-			}, {
-				name: 'notifications',
-				id: 'b', place: 'right', data: {}
-			}, {
-				name: 'trends',
-				id: 'c', place: 'right', data: {}
-			}]);
+			this.$store.set("widgets", [
+				{
+					name: "calendar",
+					id: "a",
+					place: "right",
+					data: {},
+				},
+				{
+					name: "notifications",
+					id: "b",
+					place: "right",
+					data: {},
+				},
+				{
+					name: "trends",
+					id: "c",
+					place: "right",
+					data: {},
+				},
+			]);
 		}
 	},
 
@@ -130,12 +175,16 @@ export default defineComponent({
 
 		ro.observe(this.$refs.contents);
 
-		window.addEventListener('resize', this.adjustUI, { passive: true });
+		window.addEventListener("resize", this.adjustUI, { passive: true });
 
 		if (!this.isDesktop) {
-			window.addEventListener('resize', () => {
-				if (window.innerWidth >= DESKTOP_THRESHOLD) this.isDesktop = true;
-			}, { passive: true });
+			window.addEventListener(
+				"resize",
+				() => {
+					if (window.innerWidth >= DESKTOP_THRESHOLD) this.isDesktop = true;
+				},
+				{ passive: true }
+			);
 		}
 	},
 
@@ -162,9 +211,13 @@ export default defineComponent({
 
 		attachSticky(el) {
 			const sticky = new StickySidebar(this.$refs.widgets);
-			window.addEventListener('scroll', () => {
-				sticky.calc(window.scrollY);
-			}, { passive: true });
+			window.addEventListener(
+				"scroll",
+				() => {
+					sticky.calc(window.scrollY);
+				},
+				{ passive: true }
+			);
 		},
 
 		post() {
@@ -172,7 +225,7 @@ export default defineComponent({
 		},
 
 		top() {
-			window.scroll({ top: 0, behavior: 'smooth' });
+			window.scroll({ top: 0, behavior: "smooth" });
 		},
 
 		onTransition() {
@@ -180,38 +233,51 @@ export default defineComponent({
 		},
 
 		onHeaderClick() {
-			window.scroll({ top: 0, behavior: 'smooth' });
+			window.scroll({ top: 0, behavior: "smooth" });
 		},
 
 		onContextmenu(e) {
 			const isLink = (el: HTMLElement) => {
-				if (el.tagName === 'A') return true;
+				if (el.tagName === "A") return true;
 				if (el.parentElement) {
 					return isLink(el.parentElement);
 				}
 			};
 			if (isLink(e.target)) return;
-			if (['INPUT', 'TEXTAREA', 'IMG', 'VIDEO'].includes(e.target.tagName) || e.target.attributes['contenteditable']) return;
-			if (window.getSelection().toString() !== '') return;
+			if (
+				["INPUT", "TEXTAREA", "IMG", "VIDEO", "CANVAS"].includes(
+					e.target.tagName
+				) ||
+				e.target.attributes["contenteditable"]
+			)
+				return;
+			if (window.getSelection().toString() !== "") return;
 			const path = this.$route.path;
-			os.contextMenu([{
-				type: 'label',
-				text: path,
-			}, {
-				icon: 'fas fa-columns',
-				text: this.$ts.openInSideView,
-				action: () => {
-					this.$refs.side.navigate(path);
-				}
-			}, {
-				icon: 'fas fa-window-maximize',
-				text: this.$ts.openInWindow,
-				action: () => {
-					os.pageWindow(path);
-				}
-			}], e);
+			os.contextMenu(
+				[
+					{
+						type: "label",
+						text: path,
+					},
+					{
+						icon: "fas fa-columns",
+						text: this.$ts.openInSideView,
+						action: () => {
+							this.$refs.side.navigate(path);
+						},
+					},
+					{
+						icon: "fas fa-window-maximize",
+						text: this.$ts.openInWindow,
+						action: () => {
+							os.pageWindow(path);
+						},
+					},
+				],
+				e
+			);
 		},
-	}
+	},
 });
 </script>
 
@@ -220,7 +286,8 @@ export default defineComponent({
 .tray-leave-active {
 	opacity: 1;
 	transform: translateX(0);
-	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1),
+		opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .tray-enter-from,
 .tray-leave-active {
@@ -320,7 +387,8 @@ export default defineComponent({
 		width: 64px;
 		height: 64px;
 		border-radius: 100%;
-		box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
+		box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2),
+			0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
 		font-size: 22px;
 		background: var(--panel);
 
@@ -425,5 +493,4 @@ export default defineComponent({
 }
 </style>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>

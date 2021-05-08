@@ -1,5 +1,6 @@
 <script lang="ts">
-import { defineComponent, h, TransitionGroup } from 'vue';
+import { defineComponent, h, TransitionGroup } from "vue";
+import MkAd from "@client/components/global/ad.vue";
 
 export default defineComponent({
 	props: {
@@ -10,17 +11,22 @@ export default defineComponent({
 		direction: {
 			type: String,
 			required: false,
-			default: 'down'
+			default: "down",
 		},
 		reversed: {
 			type: Boolean,
 			required: false,
-			default: false
+			default: false,
 		},
 		noGap: {
 			type: Boolean,
 			required: false,
-			default: false
+			default: false,
+		},
+		ad: {
+			type: Boolean,
+			required: false,
+			default: false,
 		},
 	},
 
@@ -32,69 +38,95 @@ export default defineComponent({
 		getDateText(time: string) {
 			const date = new Date(time).getDate();
 			const month = new Date(time).getMonth() + 1;
-			return this.$t('monthAndDay', {
+			return this.$t("monthAndDay", {
 				month: month.toString(),
-				day: date.toString()
+				day: date.toString(),
 			});
-		}
+		},
 	},
 
 	render() {
 		if (this.items.length === 0) return;
 
-		return h(this.$store.state.animation ? TransitionGroup : 'div', this.$store.state.animation ? {
-			class: 'sqadhkmv' + (this.noGap ? ' noGap _block' : ''),
-			name: 'list',
-			tag: 'div',
-			'data-direction': this.direction,
-			'data-reversed': this.reversed ? 'true' : 'false',
-		} : {
-			class: 'sqadhkmv' + (this.noGap ? ' noGap _block' : ''),
-		}, this.items.map((item, i) => {
-			const el = this.$slots.default({
-				item: item
-			})[0];
-			if (el.key == null && item.id) el.key = item.id;
+		return h(
+			this.$store.state.animation ? TransitionGroup : "div",
+			this.$store.state.animation
+				? {
+						class: "sqadhkmv" + (this.noGap ? " noGap _block" : ""),
+						name: "list",
+						tag: "div",
+						"data-direction": this.direction,
+						"data-reversed": this.reversed ? "true" : "false",
+				  }
+				: {
+						class: "sqadhkmv" + (this.noGap ? " noGap _block" : ""),
+				  },
+			this.items.map((item, i) => {
+				const el = this.$slots.default({
+					item: item,
+				})[0];
+				if (el.key == null && item.id) el.key = item.id;
 
-			if (
-				i != this.items.length - 1 &&
-				new Date(item.createdAt).getDate() != new Date(this.items[i + 1].createdAt).getDate() &&
-				!item._prId_ &&
-				!this.items[i + 1]._prId_ &&
-				!item._featuredId_ &&
-				!this.items[i + 1]._featuredId_
-			) {
-				const separator = h('div', {
-					class: 'separator',
-					key: item.id + ':separator',
-				}, h('p', {
-					class: 'date'
-				}, [
-					h('span', [
-						h('i', {
-							class: 'fas fa-angle-up icon',
-						}),
-						this.getDateText(item.createdAt)
-					]),
-					h('span', [
-						this.getDateText(this.items[i + 1].createdAt),
-						h('i', {
-							class: 'fas fa-angle-down icon',
-						})
-					])
-				]));
+				if (
+					i != this.items.length - 1 &&
+					new Date(item.createdAt).getDate() !=
+						new Date(this.items[i + 1].createdAt).getDate()
+				) {
+					const separator = h(
+						"div",
+						{
+							class: "separator",
+							key: item.id + ":separator",
+						},
+						h(
+							"p",
+							{
+								class: "date",
+							},
+							[
+								h("span", [
+									h("i", {
+										class: "fas fa-angle-up icon",
+									}),
+									this.getDateText(item.createdAt),
+								]),
+								h("span", [
+									this.getDateText(this.items[i + 1].createdAt),
+									h("i", {
+										class: "fas fa-angle-down icon",
+									}),
+								]),
+							]
+						)
+					);
 
-				return [el, separator];
-			} else {
-				return el;
-			}
-		}));
+					return [el, separator];
+				} else {
+					if (this.ad && item._shouldInsertAd_) {
+						return [
+							h(MkAd, {
+								class: "a", // advertiseの意(ブロッカー対策)
+								key: item.id + ":ad",
+								prefer: ["horizontal", "horizontal-big"],
+							}),
+							el,
+						];
+					} else {
+						return el;
+					}
+				}
+			})
+		);
 	},
 });
 </script>
 
 <style lang="scss">
 .sqadhkmv {
+	> *:empty {
+		display: none;
+	}
+
 	> *:not(:last-child) {
 		margin-bottom: var(--margin);
 	}
@@ -104,7 +136,8 @@ export default defineComponent({
 	}
 
 	> .list-enter-active {
-		transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+		transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+			opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
 	}
 
 	&[data-direction="up"] {

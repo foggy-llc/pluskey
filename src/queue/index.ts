@@ -166,7 +166,7 @@ export function createImportFollowingJob(user: { id: User['id'] }, fileId: Drive
 	});
 }
 
-export function createImportBlockingJob(user: ILocalUser, fileId: DriveFile['id']) {
+export function createImportBlockingJob(user: { id: User['id'] }, fileId: DriveFile['id']) {
 	return dbQueue.add('importBlocking', {
 		user: user,
 		fileId: fileId
@@ -176,7 +176,7 @@ export function createImportBlockingJob(user: ILocalUser, fileId: DriveFile['id'
 	});
 }
 
-export function createImportMutingJob(user: ILocalUser, fileId: DriveFile['id']) {
+export function createImportMutingJob(user: { id: User['id'] }, fileId: DriveFile['id']) {
 	return dbQueue.add('importMuting', {
 		user: user,
 		fileId: fileId
@@ -185,7 +185,6 @@ export function createImportMutingJob(user: ILocalUser, fileId: DriveFile['id'])
 		removeOnFail: true
 	});
 }
-
 
 export function createImportUserListsJob(user: { id: User['id'] }, fileId: DriveFile['id']) {
 	return dbQueue.add('importUserLists', {

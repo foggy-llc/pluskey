@@ -1,64 +1,122 @@
 <template>
-<div class="_root">
-	<transition name="fade" mode="out-in">
-		<div v-if="post" class="rkxwuolj">
-			<div class="files">
-				<div class="file" v-for="file in post.files" :key="file.id">
-					<img :src="file.url"/>
+	<div class="_root">
+		<transition name="fade" mode="out-in">
+			<div v-if="post" class="rkxwuolj">
+				<div class="files">
+					<div class="file" v-for="file in post.files" :key="file.id">
+						<img :src="file.url" />
+					</div>
 				</div>
+				<div class="body _block">
+					<div class="title">{{ post.title }}</div>
+					<div class="description"><Mfm :text="post.description" /></div>
+					<div class="info">
+						<i class="fas fa-clock"></i>
+						<MkTime :time="post.createdAt" mode="detail" />
+					</div>
+					<div class="actions">
+						<div class="like">
+							<MkButton
+								class="button"
+								@click="unlike()"
+								v-if="post.isLiked"
+								v-tooltip="$ts._gallery.unlike"
+								primary
+								><i class="fas fa-heart"></i
+								><span class="count" v-if="post.likedCount > 0">{{
+									post.likedCount
+								}}</span></MkButton
+							>
+							<MkButton
+								class="button"
+								@click="like()"
+								v-else
+								v-tooltip="$ts._gallery.like"
+								><i class="far fa-heart"></i
+								><span class="count" v-if="post.likedCount > 0">{{
+									post.likedCount
+								}}</span></MkButton
+							>
+						</div>
+						<div class="other">
+							<button
+								v-if="$i && $i.id === post.user.id"
+								class="_button"
+								@click="edit"
+								v-tooltip="$ts.edit"
+								v-click-anime
+							>
+								<i class="fas fa-pencil-alt fa-fw"></i>
+							</button>
+							<button
+								class="_button"
+								@click="shareWithNote"
+								v-tooltip="$ts.shareWithNote"
+								v-click-anime
+							>
+								<i class="fas fa-retweet fa-fw"></i>
+							</button>
+							<button
+								class="_button"
+								@click="share"
+								v-tooltip="$ts.share"
+								v-click-anime
+							>
+								<i class="fas fa-share-alt fa-fw"></i>
+							</button>
+						</div>
+					</div>
+					<div class="user">
+						<MkAvatar :user="post.user" class="avatar" />
+						<div class="name">
+							<MkUserName :user="post.user" style="display: block" />
+							<MkAcct :user="post.user" />
+						</div>
+						<MkFollowButton
+							v-if="!$i || $i.id != post.user.id"
+							:user="post.user"
+							:inline="true"
+							:transparent="false"
+							:full="true"
+							large
+							class="koudoku"
+						/>
+					</div>
+				</div>
+				<MkAd :prefer="['horizontal', 'horizontal-big']" />
+				<MkContainer :max-height="300" :foldable="true" class="other">
+					<template #header
+						><i class="fas fa-clock"></i> {{ $ts.recentPosts }}</template
+					>
+					<MkPagination :pagination="otherPostsPagination" #default="{ items }">
+						<div class="sdrarzaf">
+							<MkGalleryPostPreview
+								v-for="post in items"
+								:post="post"
+								:key="post.id"
+								class="post"
+							/>
+						</div>
+					</MkPagination>
+				</MkContainer>
 			</div>
-			<div class="body _block">
-				<div class="title">{{ post.title }}</div>
-				<div class="description"><Mfm :text="post.description"/></div>
-				<div class="info">
-					<i class="fas fa-clock"></i> <MkTime :time="post.createdAt" mode="detail"/>
-				</div>
-				<div class="actions">
-					<div class="like">
-						<MkButton class="button" @click="unlike()" v-if="post.isLiked" v-tooltip="$ts._gallery.unlike" primary><i class="fas fa-heart"></i><span class="count" v-if="post.likedCount > 0">{{ post.likedCount }}</span></MkButton>
-						<MkButton class="button" @click="like()" v-else v-tooltip="$ts._gallery.like"><i class="far fa-heart"></i><span class="count" v-if="post.likedCount > 0">{{ post.likedCount }}</span></MkButton>
-					</div>
-					<div class="other">
-						<button v-if="$i && $i.id === post.user.id" class="_button" @click="edit" v-tooltip="$ts.edit" v-click-anime><i class="fas fa-pencil-alt fa-fw"></i></button>
-						<button class="_button" @click="shareWithNote" v-tooltip="$ts.shareWithNote" v-click-anime><i class="fas fa-retweet fa-fw"></i></button>
-						<button class="_button" @click="share" v-tooltip="$ts.share" v-click-anime><i class="fas fa-share-alt fa-fw"></i></button>
-					</div>
-				</div>
-				<div class="user">
-					<MkAvatar :user="post.user" class="avatar"/>
-					<div class="name">
-						<MkUserName :user="post.user" style="display: block;"/>
-						<MkAcct :user="post.user"/>
-					</div>
-					<MkFollowButton v-if="!$i || $i.id != post.user.id" :user="post.user" :inline="true" :transparent="false" :full="true" large class="koudoku"/>
-				</div>
-			</div>
-			<MkContainer :max-height="300" :foldable="true" class="other">
-				<template #header><i class="fas fa-clock"></i> {{ $ts.recentPosts }}</template>
-				<MkPagination :pagination="otherPostsPagination" #default="{items}">
-					<div class="sdrarzaf">
-						<MkGalleryPostPreview v-for="post in items" :post="post" :key="post.id" class="post"/>
-					</div>
-				</MkPagination>
-			</MkContainer>
-		</div>
-		<MkError v-else-if="error" @retry="fetch()"/>
-		<MkLoading v-else/>
-	</transition>
-</div>
+			<MkError v-else-if="error" @retry="fetch()" />
+			<MkLoading v-else />
+		</transition>
+	</div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue';
-import MkButton from '@client/components/ui/button.vue';
-import * as os from '@client/os';
-import * as symbols from '@client/symbols';
-import MkContainer from '@client/components/ui/container.vue';
-import ImgWithBlurhash from '@client/components/img-with-blurhash.vue';
-import MkPagination from '@client/components/ui/pagination.vue';
-import MkGalleryPostPreview from '@client/components/gallery-post-preview.vue';
-import MkFollowButton from '@client/components/follow-button.vue';
-import { url } from '@client/config';
+import { computed, defineComponent } from "vue";
+import MkButton from "@client/components/ui/button.vue";
+import * as os from "@client/os";
+import * as symbols from "@client/symbols";
+import MkContainer from "@client/components/ui/container.vue";
+import ImgWithBlurhash from "@client/components/img-with-blurhash.vue";
+import MkPagination from "@client/components/ui/pagination.vue";
+import MkGalleryPostPreview from "@client/components/gallery-post-preview.vue";
+import MkFollowButton from "@client/components/follow-button.vue";
+import { url } from "@client/config";
 
 export default defineComponent({
 	components: {
@@ -72,31 +130,37 @@ export default defineComponent({
 	props: {
 		postId: {
 			type: String,
-			required: true
-		}
+			required: true,
+		},
 	},
 	data() {
 		return {
-			[symbols.PAGE_INFO]: computed(() => this.post ? {
-				title: this.post.title,
-				avatar: this.post.user,
-				path: `/gallery/${this.post.id}`,
-				share: {
-					title: this.post.title,
-					text: this.post.description,
-				},
-				actions: [{
-					icon: 'fas fa-pencil-alt',
-					text: this.$ts.edit,
-					handler: this.edit
-				}]
-			} : null),
+			[symbols.PAGE_INFO]: computed(() =>
+				this.post
+					? {
+							title: this.post.title,
+							avatar: this.post.user,
+							path: `/gallery/${this.post.id}`,
+							share: {
+								title: this.post.title,
+								text: this.post.description,
+							},
+							actions: [
+								{
+									icon: "fas fa-pencil-alt",
+									text: this.$ts.edit,
+									handler: this.edit,
+								},
+							],
+					  }
+					: null
+			),
 			otherPostsPagination: {
-				endpoint: 'users/gallery/posts',
+				endpoint: "users/gallery/posts",
 				limit: 6,
 				params: () => ({
-					userId: this.post.user.id
-				})
+					userId: this.post.user.id,
+				}),
 			},
 			post: null,
 			error: null,
@@ -104,7 +168,7 @@ export default defineComponent({
 	},
 
 	watch: {
-		postId: 'fetch'
+		postId: "fetch",
 	},
 
 	created() {
@@ -114,31 +178,33 @@ export default defineComponent({
 	methods: {
 		fetch() {
 			this.post = null;
-			os.api('gallery/posts/show', {
-				postId: this.postId
-			}).then(post => {
-				this.post = post;
-			}).catch(e => {
-				this.error = e;
-			});
+			os.api("gallery/posts/show", {
+				postId: this.postId,
+			})
+				.then((post) => {
+					this.post = post;
+				})
+				.catch((e) => {
+					this.error = e;
+				});
 		},
 
 		share() {
 			navigator.share({
 				title: this.post.title,
 				text: this.post.description,
-				url: `${url}/gallery/${this.post.id}`
+				url: `${url}/gallery/${this.post.id}`,
 			});
 		},
 
 		shareWithNote() {
 			os.post({
-				initialText: `${this.post.title} ${url}/gallery/${this.post.id}`
+				initialText: `${this.post.title} ${url}/gallery/${this.post.id}`,
 			});
 		},
 
 		like() {
-			os.apiWithDialog('gallery/posts/like', {
+			os.apiWithDialog("gallery/posts/like", {
 				postId: this.postId,
 			}).then(() => {
 				this.post.isLiked = true;
@@ -148,12 +214,12 @@ export default defineComponent({
 
 		async unlike() {
 			const confirm = await os.dialog({
-				type: 'warning',
+				type: "warning",
 				showCancelButton: true,
 				text: this.$ts.unlikeConfirm,
 			});
 			if (confirm.canceled) return;
-			os.apiWithDialog('gallery/posts/unlike', {
+			os.apiWithDialog("gallery/posts/unlike", {
 				postId: this.postId,
 			}).then(() => {
 				this.post.isLiked = false;
@@ -163,8 +229,8 @@ export default defineComponent({
 
 		edit() {
 			this.$router.push(`/gallery/${this.post.id}/edit`);
-		}
-	}
+		},
+	},
 });
 </script>
 
@@ -275,7 +341,6 @@ export default defineComponent({
 	margin: var(--margin);
 
 	> .post {
-
 	}
 }
 </style>

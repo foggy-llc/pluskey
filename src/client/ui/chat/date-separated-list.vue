@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, h, TransitionGroup } from 'vue';
+import { defineComponent, h, TransitionGroup } from "vue";
 
 export default defineComponent({
 	props: {
@@ -10,69 +10,78 @@ export default defineComponent({
 		reversed: {
 			type: Boolean,
 			required: false,
-			default: false
-		}
+			default: false,
+		},
 	},
 
 	methods: {
 		focus() {
 			this.$slots.default[0].elm.focus();
-		}
+		},
 	},
 
 	render() {
 		const getDateText = (time: string) => {
 			const date = new Date(time).getDate();
 			const month = new Date(time).getMonth() + 1;
-			return this.$t('monthAndDay', {
+			return this.$t("monthAndDay", {
 				month: month.toString(),
-				day: date.toString()
+				day: date.toString(),
 			});
-		}
+		};
 
-		return h(this.reversed ? 'div' : TransitionGroup, {
-			class: 'hmjzthxl',
-			name: this.reversed ? 'list-reversed' : 'list',
-			tag: 'div',
-		}, this.items.map((item, i) => {
-			const el = this.$slots.default({
-				item: item
-			})[0];
-			if (el.key == null && item.id) el.key = item.id;
+		return h(
+			this.reversed ? "div" : TransitionGroup,
+			{
+				class: "hmjzthxl",
+				name: this.reversed ? "list-reversed" : "list",
+				tag: "div",
+			},
+			this.items.map((item, i) => {
+				const el = this.$slots.default({
+					item: item,
+				})[0];
+				if (el.key == null && item.id) el.key = item.id;
 
-			if (
-				i != this.items.length - 1 &&
-				new Date(item.createdAt).getDate() != new Date(this.items[i + 1].createdAt).getDate() &&
-				!item._prId_ &&
-				!this.items[i + 1]._prId_ &&
-				!item._featuredId_ &&
-				!this.items[i + 1]._featuredId_
-			) {
-				const separator = h('div', {
-					class: 'separator',
-					key: item.id + ':separator',
-				}, h('p', {
-					class: 'date'
-				}, [
-					h('span', [
-						h('i', {
-							class: 'fas fa-angle-up icon',
-						}),
-						getDateText(item.createdAt)
-					]),
-					h('span', [
-						getDateText(this.items[i + 1].createdAt),
-						h('i', {
-							class: 'fas fa-angle-down icon',
-						})
-					])
-				]));
+				if (
+					i != this.items.length - 1 &&
+					new Date(item.createdAt).getDate() !=
+						new Date(this.items[i + 1].createdAt).getDate()
+				) {
+					const separator = h(
+						"div",
+						{
+							class: "separator",
+							key: item.id + ":separator",
+						},
+						h(
+							"p",
+							{
+								class: "date",
+							},
+							[
+								h("span", [
+									h("i", {
+										class: "fas fa-angle-up icon",
+									}),
+									getDateText(item.createdAt),
+								]),
+								h("span", [
+									getDateText(this.items[i + 1].createdAt),
+									h("i", {
+										class: "fas fa-angle-down icon",
+									}),
+								]),
+							]
+						)
+					);
 
-				return [el, separator];
-			} else {
-				return el;
-			}
-		}));
+					return [el, separator];
+				} else {
+					return el;
+				}
+			})
+		);
 	},
 });
 </script>
@@ -83,15 +92,18 @@ export default defineComponent({
 		transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
 	}
 	> .list-enter-active {
-		transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+		transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+			opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
 	}
 	> .list-enter-from {
 		opacity: 0;
 		transform: translateY(-64px);
 	}
 
-	> .list-reversed-enter-active, > .list-reversed-leave-active {
-		transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+	> .list-reversed-enter-active,
+	> .list-reversed-leave-active {
+		transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+			opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
 	}
 	> .list-reversed-enter-from {
 		opacity: 0;
