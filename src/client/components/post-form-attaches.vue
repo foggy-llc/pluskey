@@ -118,7 +118,7 @@ export default defineComponent({
 				action: () => { this.toggleSensitive(file) }
 			},{
 				text: this.$ts.addComment,
-				icon: faICursor,
+				icon: 'fas fa-i-cursor',
 				action: () => { this.comment(file) }
 			},{
 				text: this.$ts.attachCancel,

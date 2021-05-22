@@ -1,16 +1,11 @@
 <template>
-	<div class="hiyeyicy" :class="{ wide: !narrow }" ref="el">
-		<div class="nav" v-if="!narrow || page == null">
-			<FormBase>
-				<FormGroup>
-					<div class="_formItem">
-						<div class="_formPanel lxpfedzu">
-							<img
-								:src="$instance.iconUrl || '/favicon.ico'"
-								alt=""
-								class="icon"
-							/>
-						</div>
+<div class="hiyeyicy" :class="{ wide: !narrow }" ref="el">
+	<div class="nav" v-if="!narrow || page == null">
+		<FormBase>
+			<FormGroup>
+				<div class="_formItem">
+					<div class="_formPanel lxpfedzu">
+						<img :src="$instance.iconUrl || '/favicon.ico'" alt="" class="icon"/>
 					</div>
 				</div>
 				<FormLink :active="page === 'overview'" replace to="/instance/overview"><template #icon><i class="fas fa-tachometer-alt"></i></template>{{ $ts.overview }}</FormLink>
@@ -52,6 +47,10 @@
 			</FormGroup>
 		</FormBase>
 	</div>
+	<div class="main">
+		<component :is="component" :key="page" @info="onInfo" v-bind="pageProps"/>
+	</div>
+</div>
 </template>
 
 <script lang="ts">

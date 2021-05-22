@@ -237,15 +237,17 @@ export default defineComponent({
 			this.text += ' ';
 		}
 
-		if (this.reply && this.reply.user.host != null) {
-			this.text = `@${this.reply.user.username}@${toASCII(this.reply.user.host)} `;
+		if (this.reply &&
+      (this.$store.state.localMentions ? this.reply.userId !== this.$i.id : this.reply.user.host != null)
+    ) {
+			this.text = this.reply.user.host ? `@${this.reply.user.username}@${toASCII(this.reply.user.host)} ` : `@${this.reply.user.username} `;
 		}
 
 		if (this.reply && this.reply.text != null) {
 			const ast = mfm.parse(this.reply.text);
 
 			for (const x of extractMentions(ast)) {
-				const mention = x.host ? `@${x.username}@${toASCII(x.host)}` : `@${x.username}`;
+				const mention = x.host ? x.host != host ? `@${x.username}@${toASCII(x.host)}` : `@${x.username}` : `@${x.username}`;
 
 				// 自分は除外
 				if (this.$i.username == x.username && x.host == null) continue;

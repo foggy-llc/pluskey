@@ -1,10 +1,8 @@
 name: Node.js CI
 on:
-  push:
-    branches:
-      - master
-      - develop
   pull_request:
+    branches:
+      - qa
 
 jobs:
   build_and_test:

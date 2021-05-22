@@ -625,7 +625,7 @@ export default defineComponent({
 					text: this.$ts.watch,
 					action: () => this.toggleWatch(true)
 				}) : undefined,
-				this.appearNote.userId == this.$i.id ? (this.$i.pinnedNoteIds || []).includes(this.appearNote.id) ? {
+				true ? (this.$i.pinnedNoteIds || []).includes(this.appearNote.id) ? {
 					icon: 'fas fa-thumbtack',
 					text: this.$ts.unpin,
 					action: () => this.togglePin(false)
