@@ -802,7 +802,7 @@ export default defineComponent({
 									  }
 						  )
 						: undefined,
-					this.appearNote.userId == this.$i.id
+					true
 						? (this.$i.pinnedNoteIds || []).includes(this.appearNote.id)
 							? {
 									icon: "fas fa-thumbtack",
