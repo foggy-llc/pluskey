@@ -9,9 +9,9 @@ It will also allow the reader to use the translation tool of their preference if
 ## Issues
 Before creating an issue, please check the following:
 - To avoid duplication, please search for similar issues before creating a new issue.
-- Do not use Issues as a question.
-	- Issues should only be used to feature requests, suggestions, and report problems.
-	- Please ask questions in the [Misskey Forum](https://forum.misskey.io/) or [Discord](https://discord.gg/Wp8gVStHW3).
+- Do not use Issues to ask questions or troubleshooting.
+	- Issues should only be used to feature requests, suggestions, and bug tracking.
+	- Please ask questions or troubleshooting in the [Misskey Forum](https://forum.misskey.io/) or [Discord](https://discord.gg/Wp8gVStHW3).
 
 ## Before implementation
 When you want to add a feature or fix a bug, **first have the design and policy reviewed in an Issue** (if it is not there, please make one). Without this step, there is a high possibility that the PR will not be merged even if it is implemented.
@@ -49,14 +49,26 @@ If your language is not listed in Crowdin, please open an issue.
 
 ![Crowdin](https://d322cqt584bo4o.cloudfront.net/misskey/localized.svg)
 
-## Documentation
-* Documents for instance admins are located in [`/docs`](/docs).
-* Documents for end users are located in [`/src/docs`](/src/docs).
+## Development
+During development, it is useful to use the `npm run dev` command.
+This command monitors the server-side and client-side source files and automatically builds them if they are modified.
+In addition, it will also automatically start the Misskey server process.
 
 ## Testing
 - Test codes are located in [`/test`](/test).
 
 ### Run test
+Create a config file.
+```
+cp test/test.yml .config/
+```
+Prepare DB/Redis for testing.
+```
+docker-compose -f test/docker-compose.yml up
+```
+Alternatively, prepare an empty (data can be erased) DB and edit `.config/test.yml`. 
+
+Run all test.
 ```
 npm run test
 ```
@@ -72,6 +84,11 @@ TODO
 ## Continuous integration
 Misskey uses GitHub Actions for executing automated tests.
 Configuration files are located in [`/.github/workflows`](/.github/workflows).
+
+## Vue
+Misskey uses Vue(v3) as its front-end framework.
+**When creating a new component, please use the Composition API instead of the Options API.**
+Some of the existing components are implemented in the Options API, but it is an old implementation. Refactors that migrate those components to the Composition API are also welcome.
 
 ## Adding MisskeyRoom items
 * Use English for material, object and texture names.
@@ -160,13 +177,16 @@ const users = userIds.length > 0 ? await Users.find({
 SQLでは配列のインデックスは**1始まり**。
 `[a, b, c]`の `a`にアクセスしたいなら`[0]`ではなく`[1]`と書く
 
+### null IN
+nullが含まれる可能性のあるカラムにINするときは、そのままだとおかしくなるのでORなどでnullのハンドリングをしよう。
+
 ### `undefined`にご用心
 MongoDBの時とは違い、findOneでレコードを取得する時に対象レコードが存在しない場合 **`undefined`** が返ってくるので注意。
 MongoDBは`null`で返してきてたので、その感覚で`if (x === null)`とか書くとバグる。代わりに`if (x == null)`と書いてください
 
 ### Migration作成方法
 ```
-npx ts-node ./node_modules/typeorm/cli.js migration:generate -n 変更の名前
+npx ts-node ./node_modules/typeorm/cli.js migration:generate -n 変更の名前 -o
 ```
 
 作成されたスクリプトは不必要な変更を含むため除去してください。
@@ -176,6 +196,10 @@ npx ts-node ./node_modules/typeorm/cli.js migration:generate -n 変更の名前
 
 ### JSONのimportに気を付けよう
 TypeScriptでjsonをimportすると、tscでコンパイルするときにそのjsonファイルも一緒にdistディレクトリに吐き出されてしまう。この挙動により、意図せずファイルの書き換えが発生することがあるので、jsonをimportするときは書き換えられても良いものかどうか確認すること。書き換えされて欲しくない場合は、importで読み込むのではなく、`fs.readFileSync`などの関数を使って読み込むようにすればよい。
+
+### コンポーネントのスタイル定義でmarginを持たせない
+コンポーネント自身がmarginを設定するのは問題の元となることはよく知られている
+marginはそのコンポーネントを使う側が設定する
 
 ## その他
 ### HTMLのクラス名で follow という単語は使わない
