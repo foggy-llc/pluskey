@@ -6,6 +6,8 @@ on:
       - master
       - develop
   pull_request:
+    branches:
+      - qa
 
 jobs:
   lint:
